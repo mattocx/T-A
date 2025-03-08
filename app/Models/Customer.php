@@ -19,7 +19,7 @@ class Customer extends Authenticatable
     return $this->belongsTo(Package::class);
 }
 
-    protected $fillable = ['id', 'name', 'email', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package-id'];
+    protected $fillable = ['id', 'name', 'email', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package-id', 'role'];
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -27,20 +27,8 @@ class Customer extends Authenticatable
     {
         parent::boot();
         static::creating(function ($customer) {
-            do {
-                $id = 'C' . strtoupper(Str::random(8));
-            } while (Customer::where('id', $id)->exists());
+            $customer->id = 'S' . strtoupper(Str::random(8)); // ID sales custom
 
-            $customer->id = $id;
-
-            // Tambahkan juga ke tabel users
-            User::create([
-                'id' => $customer->id,
-                'role' => 'customer',
-                'name' => $customer->name,
-                'email' => $customer->email,
-                'password' => bcrypt($customer->password),
-            ]);
         });
     }
 }

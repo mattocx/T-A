@@ -12,6 +12,9 @@ return new class extends Migration {
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('password');
+            $table->string('role')->default('admin'); // Menambahkan kolom role
+            $table->string('phone')->nullable();
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }

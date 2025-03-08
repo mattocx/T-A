@@ -10,7 +10,7 @@ class Sales extends Authenticatable
 {
     use HasFactory;
 
-    protected $fillable = ['id', 'name', 'email', 'password'];
+    protected $fillable = ['id', 'name', 'email', 'password','role','phone','photo'];
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -20,14 +20,6 @@ class Sales extends Authenticatable
         static::creating(function ($sales) {
             $sales->id = 'S' . strtoupper(Str::random(8)); // ID sales custom
 
-            // Tambahkan juga ke tabel users
-            User::create([
-                'id' => $sales->id,
-                'role' => 'sales',
-                'name' => $sales->name,
-                'email' => $sales->email,
-                'password' => bcrypt($sales->password),
-            ]);
         });
     }
 }
