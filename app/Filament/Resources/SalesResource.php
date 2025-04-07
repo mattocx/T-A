@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
 
 
 class SalesResource extends Resource
@@ -44,6 +46,13 @@ class SalesResource extends Resource
                     ->nullable()
                     ->unique(Sales::class, 'email'),
 
+                    FileUpload::make('photo')
+                    ->label('Foto Profil')
+                    ->image()
+                    ->avatar()
+                    ->directory('sales-photos')
+                    ->nullable(),
+
                     TextInput::make('password')
                     ->password()
                     ->dehydrated(fn ($state) => filled($state))
@@ -56,11 +65,16 @@ class SalesResource extends Resource
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
-            ->columns([
-                TextColumn::make('id')->label('Sales ID')->sortable(),
-                TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('email')->sortable()->searchable(),
-                TextColumn::make('created_at')->dateTime(),
+        ->columns([
+            ImageColumn::make('photo')
+                ->label('Foto')
+                ->circular()
+                ->square(),
+            TextColumn::make('id')->label('Sales ID')->sortable(),
+            TextColumn::make('name')->label('Nama Sales')->sortable()->searchable(),
+            TextColumn::make('phone')->label('Nomor Telepon')->sortable()->searchable(),
+            TextColumn::make('email')->label('Email')->sortable()->searchable(),
+            TextColumn::make('created_at')->label('Dibuat Pada')->dateTime(),
             ])
             ->filters([])
             ->actions([

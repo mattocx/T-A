@@ -18,6 +18,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\LoginCustom;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -28,6 +30,10 @@ class DashboardPanelProvider extends PanelProvider
             ->id('dashboard')
             ->path('dashboard')
             ->login()
+            ->databaseNotifications()
+            ->profile(EditProfile::class)
+            // ->profile(isSimple: false)
+            ->authGuard('admin')
             ->colors([
                 'primary' => Color::Pink,
             ])
@@ -39,7 +45,6 @@ class DashboardPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

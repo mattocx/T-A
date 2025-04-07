@@ -18,6 +18,10 @@ use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Package;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class CustomerResource extends Resource
@@ -41,7 +45,7 @@ class CustomerResource extends Resource
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->unique(Customer ::class, 'email')
+                    ->unique(Customer::class, 'email')
                     ->nullable(),
                 TextInput::make('password')
                     ->label('Password')
@@ -76,12 +80,18 @@ class CustomerResource extends Resource
                         'wireless' => 'Wireless',
                     ])
                     ->required(),
-                    Select::make('package_id')
+                Select::make('package_id')
                     ->label('Paket Internet')
-                    ->options(Package::all()->pluck('name', 'id'))
+                    ->options(fn () => Package::pluck('name', 'id')->toArray())
                     ->searchable()
                     ->required(),
-                    ]);
+                Select::make('status')
+                    ->options([
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif'
+                    ])
+                    ->required(),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -95,16 +105,48 @@ class CustomerResource extends Resource
                 TextColumn::make('phone')->label('No HP')->sortable(),
                 TextColumn::make('network_type')->label('Jenis Jaringan')->sortable(),
                 TextColumn::make('package.name')->label('Paket Internet')->sortable(),
-                TextColumn::make('installation_date')->label('Tanggal Pemasangan')->dateTime(),
+                TextColumn::make('installation_date')->label('Tanggal Pemasangan')->date(),
+                BadgeColumn::make('status')
+                ->label('Status')
+                ->colors([
+                    'success' => 'active',
+                    'danger' => 'inactive',
+                ])
+                ->formatStateUsing(fn ($state) => $state === 'active' ? 'Aktif' : 'Nonaktif')
             ])
-
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Action::make('toggle_status')
+                    ->label(fn ($record) => $record->status === 'active' ? 'Nonaktifkan' : 'Aktifkan')
+                    ->icon(fn ($record) => $record->status === 'active' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn ($record) => $record->status === 'active' ? 'danger' : 'success')
+                    ->visible(fn () => Auth::guard('admin')->check())
+                    ->action(fn ($record) => $record->update([
+                        'status' => $record->status === 'active' ? 'inactive' : 'active'
+                    ])),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
+    }
+
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        return $data;
+    }
+
+    public static function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        return $data;
     }
 
     public static function getRelations(): array
