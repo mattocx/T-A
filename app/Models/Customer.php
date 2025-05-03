@@ -53,17 +53,28 @@ class Customer extends Authenticatable implements FilamentUser
     }
 
     public function dueDate()
-{
-    return $this->installation_date
-        ? \Carbon\Carbon::parse($this->installation_date)->addDays($this->package->duration)
-        : null;
-}
-public function isAlmostDue()
-{
-    $dueDate = $this->dueDate();
+    {
+        if ($this->installation_date && $this->package) {
+            return Carbon::parse($this->installation_date)->addDays($this->package->duration);
+        }
+        return null;
+    }
 
-    return $dueDate && $dueDate->subDays(2)->isToday();
-}
+    public function daysLeft()
+    {
+        $dueDate = $this->dueDate();
+        return $dueDate ? now()->diffInDays($dueDate, false) : null;
+    }
+
+    public function checkAndUpdateStatus()
+    {
+        if ($this->dueDate() && now()->gt($this->dueDate())) {
+            // Update status jika lewat jatuh tempo
+            if ($this->status !== 'inactive') {
+                $this->update(['status' => 'inactive']);
+            }
+        }
+    }
 
 
 }

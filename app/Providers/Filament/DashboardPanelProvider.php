@@ -20,6 +20,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\LoginCustom;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -29,11 +31,12 @@ class DashboardPanelProvider extends PanelProvider
             ->default()
             ->id('dashboard')
             ->path('dashboard')
-            ->login()
+            ->login(LoginCustom::class)
             ->databaseNotifications()
             ->profile(EditProfile::class)
             // ->profile(isSimple: false)
             ->authGuard('admin')
+            ->font('Poppins')
             ->colors([
                 'primary' => Color::Pink,
             ])
@@ -45,6 +48,13 @@ class DashboardPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                \App\Filament\Widgets\TotalCustomers::class,
+                \App\Filament\Widgets\CustomersDueTodayAdmin::class,
+                \App\Filament\Widgets\TotalRevenueThisMonthWidget::class,
+                \App\Filament\Widgets\BrandInfo::class,
+                \App\Filament\Widgets\PackagePopularityChart::class,
+
+
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -61,7 +71,7 @@ class DashboardPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentApexChartsPlugin::make(),
             ]);
         }
     }

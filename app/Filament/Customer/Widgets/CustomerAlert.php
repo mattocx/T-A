@@ -2,32 +2,46 @@
 
 namespace App\Filament\Customer\Widgets;
 
-use Filament\Widgets\Widget;
-use Filament\Notifications\Notification;
-use Illuminate\Support\Carbon;
+use Filament\Widgets\StatsOverviewWidget;
+use Filament\Widgets\StatsOverviewWidget\Card;
+use Illuminate\Support\Facades\Auth;
 
-class CustomerAlert extends Widget
+class CustomerAlert extends StatsOverviewWidget
 {
-    protected static string $view = 'filament.customer.widgets.customer-alert';
-
-    public function mount(): void
+    protected function getCards(): array
     {
-        $customer = auth()->user();
+        $customer = Auth::guard('customer')->user();
+        $customer->load('package');
+        $customer->checkAndUpdateStatus(); // update status otomatis
 
-        // Cek apakah paket hampir jatuh tempo (misal 3 hari sebelum habis)
-        if ($customer && method_exists($customer, 'dueDate')) {
-            $dueDate = $customer->dueDate();
+        $daysLeft = (int) $customer->daysLeft(); // Dibulatkan ke bilangan bulat
 
-            if ($dueDate && $dueDate->copy()->subDays(2)->isToday()) {
-                Notification::make()
-                    ->title('Paket Anda Akan Segera Habis!')
-                    ->body('Silakan lakukan pembayaran sebelum ' . $dueDate->format('d M Y') . '.')
-                    ->danger()
-                    ->persistent()
-                    ->send();
-            }
+        if (is_null($daysLeft)) {
+            return [
+                Card::make('Status Pembayaran', 'Belum ada data pemasangan')
+                    ->description('Silakan hubungi admin')
+                    ->color('gray'),
+            ];
+        }
+
+        if ($daysLeft > 0) {
+            return [
+                Card::make('Status Pembayaran', "$daysLeft hari lagi")
+                    ->description('Silakan lakukan pembayaran sebelum jatuh tempo')
+                    ->color('success'),
+            ];
+        } elseif ($daysLeft === 0) {
+            return [
+                Card::make('Status Pembayaran', 'Hari ini!')
+                    ->description('⚠️ Hari ini jatuh tempo. Segera bayar!')
+                    ->color('warning'),
+            ];
+        } else {
+            return [
+                Card::make('Status Pembayaran', "Telat " . abs($daysLeft) . " hari")
+                    ->description('❌ Layanan dinonaktifkan karena telat bayar.')
+                    ->color('danger'),
+            ];
         }
     }
-
-    protected int | string | array $columnSpan = 'full';
 }

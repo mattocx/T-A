@@ -32,7 +32,7 @@ class SalesPanelProvider extends PanelProvider
                 'primary' => Color::Pink,
             ])
             ->authGuard('sales')
-            ->login()
+            ->login(LoginCustom::class)
             ->resources([
                 CustomerResource::class, // Bisa akses Customer
             ])
@@ -45,6 +45,7 @@ class SalesPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\BrandInfo::class
             ])
             ->middleware([
                 EncryptCookies::class,

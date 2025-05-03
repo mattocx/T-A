@@ -10,4 +10,10 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'price', 'description', 'duration'];
+
+    // Tambahkan relasi ini DI DALAM class
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
 }

@@ -17,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Pages\LoginCustom;
 
 class CustomerPanelProvider extends PanelProvider
 {
@@ -26,7 +27,7 @@ class CustomerPanelProvider extends PanelProvider
             ->id('customer')
             ->path('customer')
             ->authGuard('customer')
-            ->login()
+            ->login(LoginCustom::class)
             ->colors([
                 'primary' => Color::Pink,
             ])
@@ -40,6 +41,8 @@ class CustomerPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
                 \App\Filament\Customer\Widgets\CustomerAlert::class,
+                \App\Filament\Customer\Widgets\CustomerPackageWidget::class,
+                \App\Filament\Widgets\BrandInfo::class
             ])
             ->middleware([
                 EncryptCookies::class,
