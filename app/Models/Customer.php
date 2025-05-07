@@ -13,8 +13,6 @@ use Filament\Panel;
 use Carbon\Carbon;
 use Illuminate\Notifications\Notifiable;
 
-
-
 class Customer extends Authenticatable implements FilamentUser
 {
     use HasFactory;
@@ -22,6 +20,26 @@ class Customer extends Authenticatable implements FilamentUser
     public function package()
     {
         return $this->belongsTo(Package::class);
+    }
+
+    // Relasi dengan model Payment
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'customer_id', 'id');
+    }
+    
+    // Cek apakah customer memiliki pembayaran aktif
+    public function hasActivePayment()
+    {
+        return $this->payments()->where('status', 'success')
+            ->where('due_date', '>=', now())
+            ->exists();
+    }
+    
+    // Mendapatkan pembayaran terakhir
+    public function latestPayment()
+    {
+        return $this->payments()->latest()->first();
     }
 
     protected $fillable = ['id', 'name', 'email', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package_id', 'role', 'status'];

@@ -39,7 +39,7 @@ class CustomerPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Customer/Widgets'), for: 'App\\Filament\\Customer\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                \App\Filament\Customer\Widgets\CustomerPaymentButton::class,
                 \App\Filament\Customer\Widgets\CustomerAlert::class,
                 \App\Filament\Customer\Widgets\CustomerPackageWidget::class,
                 \App\Filament\Widgets\BrandInfo::class
