@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
+use App\Models\Package;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
@@ -15,20 +16,46 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Package;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-
-
+use Illuminate\Database\Eloquent\Model;
 
 class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Pengguna';
+    protected static ?string $recordTitleAttribute = 'name'; // Untuk judul hasil search
+
+    // Aktifkan Global Search untuk resource ini
+    public static function canGloballySearch(): bool
+    {
+        return true;
+    }
+
+    // Kolom yang bisa di-search secara global
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'nik', 'address'];
+    }
+
+    // Judul pada hasil pencarian global
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return $record->name;
+    }
+
+    // Detail info tambahan di hasil pencarian
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'NIK' => $record->nik,
+            'Alamat' => $record->address,
+            'No HP' => $record->phone,
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -86,9 +113,10 @@ class CustomerResource extends Resource
                     ->searchable()
                     ->required(),
                 Select::make('status')
+                    ->label('Status')
                     ->options([
                         'active' => 'Aktif',
-                        'inactive' => 'Nonaktif'
+                        'inactive' => 'Nonaktif',
                     ])
                     ->required(),
             ]);
@@ -107,12 +135,12 @@ class CustomerResource extends Resource
                 TextColumn::make('package.name')->label('Paket Internet')->sortable(),
                 TextColumn::make('installation_date')->label('Tanggal Pemasangan')->date(),
                 BadgeColumn::make('status')
-                ->label('Status')
-                ->colors([
-                    'success' => 'active',
-                    'danger' => 'inactive',
-                ])
-                ->formatStateUsing(fn ($state) => $state === 'active' ? 'Aktif' : 'Nonaktif')
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'active',
+                        'danger' => 'inactive',
+                    ])
+                    ->formatStateUsing(fn ($state) => $state === 'active' ? 'Aktif' : 'Nonaktif'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -123,7 +151,7 @@ class CustomerResource extends Resource
                     ->color(fn ($record) => $record->status === 'active' ? 'danger' : 'success')
                     ->visible(fn () => Auth::guard('admin')->check())
                     ->action(fn ($record) => $record->update([
-                        'status' => $record->status === 'active' ? 'inactive' : 'active'
+                        'status' => $record->status === 'active' ? 'inactive' : 'active',
                     ])),
             ])
             ->bulkActions([

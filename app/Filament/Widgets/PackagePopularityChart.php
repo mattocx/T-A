@@ -14,7 +14,7 @@ class PackagePopularityChart extends ApexChartWidget
         return 'pie';
     }
 
-    protected function getData(): array
+    protected function getOptions(): array
     {
         $packages = Package::withCount('customers')->get();
 

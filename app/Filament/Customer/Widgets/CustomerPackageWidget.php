@@ -7,7 +7,15 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerPackageWidget extends Widget
 {
+
     protected static string $view = 'filament.customer.widgets.customer-package-widget';
+
+    protected int | string | array $columnSpan = 'full';
+
+    protected function getColumns(): int
+    {
+        return 1;
+    }
 
     public function getViewData(): array
     {

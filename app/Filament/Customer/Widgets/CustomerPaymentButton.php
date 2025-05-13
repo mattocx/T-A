@@ -4,19 +4,18 @@ namespace App\Filament\Customer\Widgets;
 
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class CustomerPaymentButton extends Widget
 {
     protected static string $view = 'filament.customer.widgets.customer-payment-button';
-    
+
     protected int | string | array $columnSpan = 'full';
-    
+
     public function getViewData(): array
     {
         $customer = Auth::guard('customer')->user();
         $customer->load('package');
-        
+
         // Cek apakah customer memiliki paket aktif
         if (!$customer->package) {
             return [
@@ -26,19 +25,19 @@ class CustomerPaymentButton extends Widget
                 'status' => 'unknown',
             ];
         }
-        
+
         // Periksa apakah customer sudah memiliki pembayaran aktif
         $hasActivePayment = $customer->hasActivePayment();
-        
+
         // Hitung hari yang tersisa
         $daysLeft = (int) $customer->daysLeft();
-        
+
         // Periksa apakah customer perlu membayar
         $needsPayment = $daysLeft <= 7 || $customer->status === 'inactive';
-        
+
         // Tampilkan tombol bayar jika perlu pembayaran dan tidak memiliki pembayaran aktif
         $showPayButton = $needsPayment && !$hasActivePayment;
-        
+
         return [
             'showPayButton' => $showPayButton,
             'daysLeft' => $daysLeft,
@@ -46,7 +45,7 @@ class CustomerPaymentButton extends Widget
             'jatuhTempo' => $customer->dueDate()?->format('d M Y'),
         ];
     }
-    
+
     public static function canView(): bool
     {
         return Auth::guard('customer')->check();

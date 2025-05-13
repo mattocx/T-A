@@ -1,0 +1,26 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@config 'tailwind.config.js';
+
+.fi-sidebar {
+    @apply bg-pink-50 shadow-md;
+}
+
+.fi-sidebar-header {
+    @apply bg-pink-100 !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+
+.fi-logo {
+    @apply text-black !important;
+}
+
+.fi-topbar > nav {
+    @apply bg-pink-600 text-white shadow-md !important;
+}
+
+.fi-topbar > nav > div > div > div > button.fi-icon-btn {
+    @apply text-white !important;
+}
+ 

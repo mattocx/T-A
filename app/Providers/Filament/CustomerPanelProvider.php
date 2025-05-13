@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Providers\Filament;
-
+use App\Filament\Pages\Auth\EditProfile;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,7 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Pages\LoginCustom;
+use Filament\Navigation\MenuItem;
 
 class CustomerPanelProvider extends PanelProvider
 {
@@ -26,15 +27,18 @@ class CustomerPanelProvider extends PanelProvider
         return $panel
             ->id('customer')
             ->path('customer')
+            ->profile(EditProfile::class)
             ->authGuard('customer')
-            ->login(LoginCustom::class)
             ->colors([
                 'primary' => Color::Pink,
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()->label('Edit profile'),
             ])
             ->discoverResources(in: app_path('Filament/Customer/Resources'), for: 'App\\Filament\\Customer\\Resources')
             ->discoverPages(in: app_path('Filament/Customer/Pages'), for: 'App\\Filament\\Customer\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Customer/Widgets'), for: 'App\\Filament\\Customer\\Widgets')
             ->widgets([
@@ -42,7 +46,7 @@ class CustomerPanelProvider extends PanelProvider
                 \App\Filament\Customer\Widgets\CustomerPaymentButton::class,
                 \App\Filament\Customer\Widgets\CustomerAlert::class,
                 \App\Filament\Customer\Widgets\CustomerPackageWidget::class,
-                \App\Filament\Widgets\BrandInfo::class
+                \App\Filament\Widgets\BrandInfo::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,6 +61,9 @@ class CustomerPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/dashboard/theme.css')
+            ->defaultThemeMode(ThemeMode::Light)
+            ->darkMode(false);
     }
 }

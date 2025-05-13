@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,25 +19,24 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use App\Filament\Pages\Auth\EditProfile;
-use App\Filament\Pages\LoginCustom;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+use Filament\Navigation\MenuItem;
 
 
 class DashboardPanelProvider extends PanelProvider
 {
+
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->default()
             ->id('dashboard')
             ->path('dashboard')
-            ->login(LoginCustom::class)
+            ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
             ->profile(EditProfile::class)
-            // ->profile(isSimple: false)
             ->authGuard('admin')
+            ->favicon(asset('images/favicon.ico'))
             ->font('Poppins')
             ->colors([
                 'primary' => Color::Pink,
@@ -43,18 +44,15 @@ class DashboardPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                \App\Filament\Widgets\BrandInfo::class,
                 \App\Filament\Widgets\TotalCustomers::class,
                 \App\Filament\Widgets\CustomersDueTodayAdmin::class,
                 \App\Filament\Widgets\TotalRevenueThisMonthWidget::class,
-                \App\Filament\Widgets\BrandInfo::class,
                 \App\Filament\Widgets\PackagePopularityChart::class,
-
-
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -72,6 +70,10 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(),
-            ]);
-        }
+            ])
+            ->globalSearch(true)
+            ->viteTheme('resources/css/filament/dashboard/theme.css')
+            ->defaultThemeMode(ThemeMode::Light)
+            ->darkMode(false);
     }
+}

@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerAlert extends StatsOverviewWidget
 {
+
+    protected int | string | array $columnSpan = 'full';
+
+    protected function getColumns(): int
+    {
+        return 1;
+    }
+
     protected function getCards(): array
     {
         $customer = Auth::guard('customer')->user();
