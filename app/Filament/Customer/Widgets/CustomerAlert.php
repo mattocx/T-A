@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerAlert extends StatsOverviewWidget
 {
-
     protected int | string | array $columnSpan = 'full';
 
     protected function getColumns(): int
@@ -20,15 +19,22 @@ class CustomerAlert extends StatsOverviewWidget
     {
         $customer = Auth::guard('customer')->user();
         $customer->load('package');
-        $customer->checkAndUpdateStatus(); // update status otomatis
+        $customer->checkAndUpdateStatus();
 
-        $daysLeft = (int) $customer->daysLeft(); // Dibulatkan ke bilangan bulat
+        $daysLeft = (int) $customer->daysLeft();
+
+        $baseClasses = 'bg-white border-2 border-pink-600 hover:border-pink-700 hover:border-4 transform hover:scale-105 transition duration-300 rounded-lg cursor-pointer';
 
         if (is_null($daysLeft)) {
             return [
                 Card::make('Status Pembayaran', 'Belum ada data pemasangan')
                     ->description('Silakan hubungi admin')
-                    ->color('gray'),
+                    ->icon('heroicon-o-user-group')
+                    ->color('gray')
+                    ->extraAttributes([
+                        'class' => $baseClasses,
+                        'wire:click' => "\$dispatch('setStatusFilter', { filter: 'none' })",
+                    ]),
             ];
         }
 
@@ -36,19 +42,34 @@ class CustomerAlert extends StatsOverviewWidget
             return [
                 Card::make('Status Pembayaran', "$daysLeft hari lagi")
                     ->description('Silakan lakukan pembayaran sebelum jatuh tempo')
-                    ->color('success'),
+                    ->icon('heroicon-o-user-group')
+                    ->color('success')
+                    ->extraAttributes([
+                        'class' => $baseClasses,
+                        'wire:click' => "\$dispatch('setStatusFilter', { filter: 'ongoing' })",
+                    ]),
             ];
         } elseif ($daysLeft === 0) {
             return [
                 Card::make('Status Pembayaran', 'Hari ini!')
                     ->description('⚠️ Hari ini jatuh tempo. Segera bayar!')
-                    ->color('warning'),
+                    ->icon('heroicon-o-user-group')
+                    ->color('warning')
+                    ->extraAttributes([
+                        'class' => $baseClasses,
+                        'wire:click' => "\$dispatch('setStatusFilter', { filter: 'due' })",
+                    ]),
             ];
         } else {
             return [
                 Card::make('Status Pembayaran', "Telat " . abs($daysLeft) . " hari")
                     ->description('❌ Layanan dinonaktifkan karena telat bayar.')
-                    ->color('danger'),
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('danger')
+                    ->extraAttributes([
+                        'class' => $baseClasses,
+                        'wire:click' => "\$dispatch('setStatusFilter', { filter: 'overdue' })",
+                    ]),
             ];
         }
     }

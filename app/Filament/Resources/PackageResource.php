@@ -72,7 +72,7 @@ class PackageResource extends Resource
     ->sortable(),
 
                 TextColumn::make('duration')->label('Masa Aktif')->sortable(),
-                TextColumn::make('description')->label('Keterangan')->limit(50),
+                TextColumn::make('description')->label('Keterangan')->html()->limit(50),
             ])
             ->filters([])
             ->actions([

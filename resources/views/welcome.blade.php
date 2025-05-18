@@ -38,7 +38,7 @@
                 <div class="container mx-auto px-8 lg:flex">
                     <div class="text-center lg:text-left lg:w-1/2">
                         <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold leading-none">
-                            {{ __('Selamat Datang Di Elsa Wifi Prioritas') }}
+                            {{ __('Selamat Datang Di CYB Media') }}
                         </h1>
                         <p class="text-xl lg:text-2xl mt-6 font-light">
                             {{ __('Solusi Internet Cepat & Stabil Untuk Kebutuhan Anda') }}
@@ -219,8 +219,8 @@
             <div class="flex flex-wrap -mx-3">
                 <!-- Logo dan Nama Perusahaan -->
                 <div class="w-full md:w-1/3 px-3 mb-8 md:mb-0 ml-auto">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo PT. EWP Media" style="height: 200px; width: auto;" class="mb-4">
-                    <p class="text-lg font-semibold">PT. EWP Media</p>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo PT. CYB Media" style="height: 200px; width: auto;" class="mb-4">
+                    <p class="text-lg font-semibold">PT. CYB Media</p>
                 </div>
 
                 <!-- Kami Cocok Untuk -->
@@ -275,7 +275,7 @@
 
             <!-- Copyright -->
             <div class="mt-12 border-t pt-6 text-center text-sm text-gray-500">
-                &copy; {{ date('Y') }} PT. EWP Media. All rights reserved.
+                &copy; {{ date('Y') }} PT. CYB Media x Program Studi D3 Teknik Komputer Poltek Harber
             </div>
         </footer>
 

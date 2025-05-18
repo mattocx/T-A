@@ -6,13 +6,14 @@
     <title>Status Pembayaran - {{ $payment->order_id }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header text-white" style="background-color: #db2777;">
                         <h4 class="mb-0">Status Pembayaran</h4>
                     </div>
                     <div class="card-body text-center">
@@ -83,8 +84,8 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <a href="{{ url('/customer') }}" class="btn btn-primary">Kembali ke Dashboard</a>
-                            
+                            <a href="{{ url('/customer') }}" class="btn text-white" style="background-color: #db2777;">Kembali ke Dashboard</a>
+
                             @if($payment->status != 'success')
                                 <a href="{{ url('/payment/create') }}" class="btn btn-outline-secondary">Coba Bayar Lagi</a>
                             @endif

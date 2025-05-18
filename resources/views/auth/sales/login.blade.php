@@ -5,8 +5,8 @@
 @endsection
 
 @section('main')
-    <div>
-        <img src="{{ asset('images/logo.png') }}" class="w-mx-auto" />
+    <div class="flex justify-center">
+        <img src="{{ asset('images/logo.png') }}" class="w-40 lg:w-40" />
     </div>
     <h3 class="mx-auto max-w-xs text-2xl mt-8 font-semibold text-center text-pink-700">
         {{ __('Portal Sales') }}

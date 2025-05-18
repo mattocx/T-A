@@ -10,8 +10,8 @@ use Filament\Panel;
 class Sales extends Authenticatable implements FilamentUser
 {
     use HasFactory;
-    protected $guard = 'sales'; 
-    protected $fillable = ['id', 'name', 'email', 'password','role','phone','photo'];
+    protected $guard = 'sales';
+    protected $fillable = ['id', 'name', 'password','role','phone','photo'];
     protected $keyType = 'string';
     public $incrementing = false;
 

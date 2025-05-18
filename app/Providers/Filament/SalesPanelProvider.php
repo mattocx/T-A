@@ -19,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Pages\Auth\EditProfile;
 
 class SalesPanelProvider extends PanelProvider
 {
@@ -28,6 +29,10 @@ class SalesPanelProvider extends PanelProvider
             ->default()
             ->id('sales')
             ->path('sales')
+            ->sidebarCollapsibleOnDesktop()
+            ->profile(EditProfile::class)
+            ->favicon(asset('images/favicon.ico'))
+            ->font('Poppins')
             ->colors([
                 'primary' => Color::Pink,
             ])
@@ -42,8 +47,6 @@ class SalesPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Sales/Widgets'), for: 'App\\Filament\\Sales\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\BrandInfo::class,
             ])
             ->middleware([
@@ -60,6 +63,7 @@ class SalesPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->globalSearch(true)
             ->viteTheme('resources/css/filament/dashboard/theme.css')
             ->defaultThemeMode(ThemeMode::Light)
             ->darkMode(false);

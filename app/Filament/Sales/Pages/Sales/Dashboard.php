@@ -9,6 +9,8 @@ class Dashboard extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $title = ' Welcome ';
+    
     protected static string $view = 'filament.sales.pages.sales.dashboard';
 
     protected function getHeaderWidgets(): array

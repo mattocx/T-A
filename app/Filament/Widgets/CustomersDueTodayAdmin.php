@@ -22,13 +22,13 @@ class CustomersDueTodayAdmin extends BaseWidget
         $baseClasses = 'bg-white border-2 border-pink-600 hover:border-pink-700 hover:border-4 transform hover:scale-105 transition duration-300 rounded-lg cursor-pointer';
         $customers = Customer::with('package')->get();
 
-        $dueTodayCount = $customers->filter(function ($customer) use ($today) {
-            return $customer->dueDate()?->isSameDay($today);
+        $dueCount = $customers->filter(function ($customer) use ($today) {
+            return $customer->dueDate()?->lte($today); // <= hari ini
         })->count();
 
         return [
-            Stat::make('Pelanggan Jatuh Tempo Hari Ini', $dueTodayCount)
-                ->description('Harus diperpanjang hari ini')
+            Stat::make('Pelanggan yang Harus Perpanjang', $dueCount)
+                ->description('Paket sudah habis, perlu diperpanjang')
                 ->color('danger')
                 ->icon('heroicon-o-exclamation-circle')
                 ->extraAttributes([

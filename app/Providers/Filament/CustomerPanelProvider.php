@@ -20,6 +20,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\MenuItem;
 
+
 class CustomerPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -29,6 +30,9 @@ class CustomerPanelProvider extends PanelProvider
             ->path('customer')
             ->profile(EditProfile::class)
             ->authGuard('customer')
+            ->font('Poppins')
+            ->sidebarCollapsibleOnDesktop()
+            ->profile(EditProfile::class)
             ->colors([
                 'primary' => Color::Pink,
             ])
@@ -44,7 +48,6 @@ class CustomerPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 \App\Filament\Customer\Widgets\CustomerPaymentButton::class,
-                \App\Filament\Customer\Widgets\CustomerAlert::class,
                 \App\Filament\Customer\Widgets\CustomerPackageWidget::class,
                 \App\Filament\Widgets\BrandInfo::class,
             ])
@@ -62,6 +65,7 @@ class CustomerPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->globalSearch(true)
             ->viteTheme('resources/css/filament/dashboard/theme.css')
             ->defaultThemeMode(ThemeMode::Light)
             ->darkMode(false);

@@ -25,9 +25,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // 🔐 Force HTTPS jika di environment 'local'
-        if ($this->app->environment('local')) {
-            URL::forceScheme('https');
-        }
+        // if ($this->app->environment('local')) {
+        //     URL::forceScheme('https');
+        // }
 
         Relation::morphMap([
             'admin' => Admin::class,

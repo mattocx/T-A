@@ -21,33 +21,32 @@ use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CustomerImport;
 
 class CustomerResource extends Resource
 {
     protected static ?string $model = Customer::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Pengguna';
-    protected static ?string $recordTitleAttribute = 'name'; // Untuk judul hasil search
+    protected static ?string $recordTitleAttribute = 'name';
 
-    // Aktifkan Global Search untuk resource ini
     public static function canGloballySearch(): bool
     {
         return true;
     }
 
-    // Kolom yang bisa di-search secara global
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'nik', 'address'];
     }
 
-    // Judul pada hasil pencarian global
     public static function getGlobalSearchResultTitle(Model $record): string
     {
         return $record->name;
     }
 
-    // Detail info tambahan di hasil pencarian
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
@@ -65,15 +64,8 @@ class CustomerResource extends Resource
                     ->label('Customer ID')
                     ->disabled()
                     ->dehydrated(),
-                TextInput::make('name')
-                    ->label('Nama')
-                    ->required()
-                    ->maxLength(255),
-                TextInput::make('email')
-                    ->label('Email')
-                    ->email()
-                    ->unique(Customer::class, 'email')
-                    ->nullable(),
+                TextInput::make('name')->label('Nama')->required()->maxLength(255),
+                TextInput::make('username')->label('username'),
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
@@ -81,25 +73,15 @@ class CustomerResource extends Resource
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->afterStateHydrated(fn ($state, $set) => $set('password', ''))
                     ->maxLength(255),
-                TextInput::make('nik')
-                    ->label('NIK')
-                    ->required(),
+                TextInput::make('nik')->label('NIK')->required(),
                 FileUpload::make('photo')
                     ->label('Foto')
                     ->image()
                     ->directory('customer-photos')
                     ->nullable(),
-                TextInput::make('address')
-                    ->label('Alamat')
-                    ->required()
-                    ->maxLength(500),
-                TextInput::make('phone')
-                    ->label('Nomor HP')
-                    ->required()
-                    ->maxLength(15),
-                DatePicker::make('installation_date')
-                    ->label('Tanggal Pemasangan')
-                    ->required(),
+                TextInput::make('address')->label('Alamat')->required()->maxLength(500),
+                TextInput::make('phone')->label('Nomor HP')->required()->maxLength(15),
+                DatePicker::make('installation_date')->label('Tanggal Pemasangan')->required(),
                 Select::make('network_type')
                     ->label('Jenis Jaringan')
                     ->options([
@@ -153,6 +135,27 @@ class CustomerResource extends Resource
                     ->action(fn ($record) => $record->update([
                         'status' => $record->status === 'active' ? 'inactive' : 'active',
                     ])),
+                Action::make('import')
+                    ->label('Impor Customer')
+                    ->icon('heroicon-o-document-arrow-up')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Pilih File Excel')
+                            ->disk('public') // Gunakan disk 'public'
+                            ->directory('temp') // simpan di storage/app/public/temp
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $path = Storage::disk('public')->path($data['file']);
+                        Excel::import(new CustomerImport, $path);
+                    })
+                    ->color('primary')
+                    ->modalHeading('Import Data Customer')
+                    ->modalDescription('Unggah file Excel berformat .xlsx untuk menambahkan data customer.'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

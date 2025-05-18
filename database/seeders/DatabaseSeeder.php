@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
         // Memanggil seeder Admin dan Customer
         $this->call([
             AdminSeeder::class,
-            CustomerSeeder::class,
         ]);
     }
 }

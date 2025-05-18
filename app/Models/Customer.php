@@ -27,7 +27,7 @@ class Customer extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Payment::class, 'customer_id', 'id');
     }
-    
+
     // Cek apakah customer memiliki pembayaran aktif
     public function hasActivePayment()
     {
@@ -35,14 +35,14 @@ class Customer extends Authenticatable implements FilamentUser
             ->where('due_date', '>=', now())
             ->exists();
     }
-    
+
     // Mendapatkan pembayaran terakhir
     public function latestPayment()
     {
         return $this->payments()->latest()->first();
     }
 
-    protected $fillable = ['id', 'name', 'email', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package_id', 'role', 'status'];
+    protected $fillable = ['id', 'name', 'username', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package_id', 'role', 'status'];
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -56,7 +56,7 @@ class Customer extends Authenticatable implements FilamentUser
     {
         parent::boot();
         static::creating(function ($customer) {
-            $customer->id = 'S' . strtoupper(Str::random(8)); // ID sales custom
+            $customer->id = 'C' . strtoupper(Str::random(8)); // ID sales custom
 
         });
     }
@@ -65,10 +65,10 @@ class Customer extends Authenticatable implements FilamentUser
     {
         return true;
     }
-    public function isActive()
-    {
-        return $this->status === 'active';
-    }
+    // public function isActive()
+    // {
+    //     return $this->status === 'active';
+    // }
 
     public function dueDate()
     {

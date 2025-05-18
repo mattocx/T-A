@@ -22,10 +22,11 @@ use Filament\Tables\Columns\ImageColumn;
 class SalesResource extends Resource
 {
     protected static ?string $model = Sales::class;
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?string $navigationLabel = 'Sales';
     protected static ?string $slug = 'sales';
     protected static ?string $navigationGroup = 'Pengguna';
+     protected static ?string $navigationIcon = 'heroicon-o-users';
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -39,12 +40,6 @@ class SalesResource extends Resource
                     ->label('Nama Sales')
                     ->required()
                     ->maxLength(255),
-
-                TextInput::make('email')
-                    ->label('Email')
-                    ->email()
-                    ->nullable()
-                    ->unique(Sales::class, 'email'),
 
                     FileUpload::make('photo')
                     ->label('Foto Profil')
@@ -73,7 +68,6 @@ class SalesResource extends Resource
             TextColumn::make('id')->label('Sales ID')->sortable(),
             TextColumn::make('name')->label('Nama Sales')->sortable()->searchable(),
             TextColumn::make('phone')->label('Nomor Telepon')->sortable()->searchable(),
-            TextColumn::make('email')->label('Email')->sortable()->searchable(),
             TextColumn::make('created_at')->label('Dibuat Pada')->dateTime(),
             ])
             ->filters([])
