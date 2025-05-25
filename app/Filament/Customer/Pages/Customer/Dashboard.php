@@ -12,11 +12,12 @@ class Dashboard extends Page
 
     protected static string $view = 'filament.customer.pages.customer.dashboard';
 
-    
+
     protected function getHeaderWidgets(): array
     {
         return [
             Widgets\BrandInfo::class,
+            
         ];
     }
 }

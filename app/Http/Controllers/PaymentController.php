@@ -26,33 +26,33 @@ class PaymentController extends Controller
     public function createPayment(Request $request)
     {
         $customer = auth('customer')->user();
-        
+
         if (!$customer) {
             return redirect()->back()->with('error', 'Anda harus login terlebih dahulu');
         }
-        
+
         $package = $customer->package;
-        
+
         if (!$package) {
             return redirect()->back()->with('error', 'Paket tidak ditemukan');
         }
-        
+
         // Cek jika sudah ada pembayaran yang aktif (belum jatuh tempo dan sukses)
         $activePayment = $customer->payments()
             ->where('status', 'success')
             ->where('due_date', '>=', now())
             ->first();
-            
+
         if ($activePayment) {
             return redirect()->back()->with('info', 'Anda masih memiliki langganan aktif hingga ' . $activePayment->due_date->format('d M Y'));
         }
-        
+
         // Buat ID order unik
         $orderId = 'ORD-' . strtoupper(Str::random(6)) . '-' . time();
-        
+
         // Hitung tanggal jatuh tempo (30 hari dari sekarang)
         $dueDate = Carbon::now()->addDays($package->duration);
-        
+
         // Simpan data pembayaran ke database
         $payment = Payment::create([
             'customer_id' => $customer->id,
@@ -61,7 +61,7 @@ class PaymentController extends Controller
             'status' => 'pending',
             'due_date' => $dueDate,
         ]);
-        
+
         // Set parameter untuk Midtrans
         $params = [
             'transaction_details' => [
@@ -82,44 +82,44 @@ class PaymentController extends Controller
                 ]
             ],
         ];
-        
+
         // Dapatkan token snap dari Midtrans
         try {
             $snapToken = Snap::getSnapToken($params);
-            
+
             // Update payment dengan snap token
             $payment->update([
                 'snap_token' => $snapToken,
             ]);
-            
+
             return view('customer.payment', compact('payment', 'snapToken'));
-            
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-    
+
     // Callback dari Midtrans setelah pembayaran selesai
     public function callback(Request $request)
     {
         // Log data callback untuk debugging
         Log::info('Midtrans Callback Received', $request->all());
-        
+
         try {
             // Verifikasi signature key jika ada
             $isValid = true;
             $serverKey = config('midtrans.server_key');
-            
-            if ($request->has('signature_key') && $request->has('order_id') && 
+
+            if ($request->has('signature_key') && $request->has('order_id') &&
                 $request->has('status_code') && $request->has('gross_amount')) {
-                
+
                 $orderId = $request->order_id;
                 $statusCode = $request->status_code;
                 $grossAmount = $request->gross_amount;
-                
+
                 // Buat signature key untuk verifikasi
                 $mySignatureKey = hash("sha512", $orderId . $statusCode . $grossAmount . $serverKey);
-                
+
                 // Bandingkan signature key
                 if ($mySignatureKey != $request->signature_key) {
                     $isValid = false;
@@ -132,13 +132,12 @@ class PaymentController extends Controller
                 // Data dari frontend, tidak perlu verifikasi signature
                 Log::info('Callback from client side', ['status' => $request->client_status]);
             } else {
-                // Direct notification from Midtrans doesn't have client_status
                 Log::info('Direct notification from Midtrans');
             }
-            
+
             if ($isValid) {
                 $payment = Payment::where('order_id', $request->order_id)->first();
-                
+
                 if ($payment) {
                     // Update status payment sesuai callback
                     $payment->update([
@@ -148,31 +147,29 @@ class PaymentController extends Controller
                         'payment_date' => now(),
                         'payment_details' => json_encode($request->all()),
                     ]);
-                    
+
                     // Jika pembayaran berhasil, aktifkan kembali status customer
                     if ($payment->isSuccess()) {
                         $customer = $payment->customer;
-                        
+
                         if ($customer) {
-                            // Update status customer menjadi aktif
                             $customer->update([
                                 'status' => 'active',
                             ]);
-                            
-                            // Update tanggal installasi jika status sebelumnya tidak aktif
+
                             if (!$customer->isActive()) {
                                 $customer->update([
                                     'installation_date' => now(),
                                 ]);
                             }
-                            
+
                             Log::info('Customer status updated to active', [
                                 'customer_id' => $customer->id,
                                 'payment_id' => $payment->id
                             ]);
                         }
                     }
-                    
+
                     return response()->json([
                         'status' => 'success',
                         'message' => 'Payment status updated successfully',
@@ -196,21 +193,21 @@ class PaymentController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error processing payment: ' . $e->getMessage()
             ], 500);
         }
     }
-    
+
     // Tampilkan halaman status pembayaran
     public function paymentStatus($orderId)
     {
         $payment = Payment::where('order_id', $orderId)->firstOrFail();
         return view('customer.payment-status', compact('payment'));
     }
-    
+
     // Fungsi untuk memetakan status transaksi dari Midtrans ke status internal aplikasi
     private function mapPaymentStatus($midtransStatus)
     {
@@ -222,7 +219,7 @@ class PaymentController extends Controller
             'expire' => 'expired',
             'cancel' => 'failed',
         ];
-        
+
         return $statusMap[$midtransStatus] ?? 'pending';
     }
 }

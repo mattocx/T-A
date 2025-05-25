@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
-use App\Models\User;
-use Spatie\Permission\Traits\HasRoles;
 use App\Models\Package;
+use App\Models\Payment;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Carbon\Carbon;
@@ -15,34 +14,13 @@ use Illuminate\Notifications\Notifiable;
 
 class Customer extends Authenticatable implements FilamentUser
 {
-    use HasFactory;
-    use Notifiable;
-    public function package()
-    {
-        return $this->belongsTo(Package::class);
-    }
+    use HasFactory, Notifiable;
 
-    // Relasi dengan model Payment
-    public function payments()
-    {
-        return $this->hasMany(Payment::class, 'customer_id', 'id');
-    }
+    protected $fillable = [
+        'id', 'name', 'username', 'password', 'nik', 'photo', 'address', 'phone',
+        'installation_date', 'network_type', 'package_id', 'role', 'status'
+    ];
 
-    // Cek apakah customer memiliki pembayaran aktif
-    public function hasActivePayment()
-    {
-        return $this->payments()->where('status', 'success')
-            ->where('due_date', '>=', now())
-            ->exists();
-    }
-
-    // Mendapatkan pembayaran terakhir
-    public function latestPayment()
-    {
-        return $this->payments()->latest()->first();
-    }
-
-    protected $fillable = ['id', 'name', 'username', 'password','nik', 'photo','address','phone','installation_date', 'network_type', 'package_id', 'role', 'status'];
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -55,9 +33,9 @@ class Customer extends Authenticatable implements FilamentUser
     protected static function boot()
     {
         parent::boot();
-        static::creating(function ($customer) {
-            $customer->id = 'C' . strtoupper(Str::random(8)); // ID sales custom
 
+        static::creating(function ($customer) {
+            $customer->id = 'C' . strtoupper(Str::random(8)); // ID custom
         });
     }
 
@@ -65,36 +43,69 @@ class Customer extends Authenticatable implements FilamentUser
     {
         return true;
     }
-    // public function isActive()
-    // {
-    //     return $this->status === 'active';
-    // }
 
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'customer_id', 'id');
+    }
+
+    public function hasActivePayment()
+    {
+        return $this->payments()
+            ->where('status', 'success')
+            ->where('due_date', '>=', now())
+            ->exists();
+    }
+
+    public function latestPayment()
+    {
+        return $this->payments()
+            ->where('status', 'success')
+            ->latest('payment_date') // pastikan kamu punya field ini, kalau tidak ganti dengan created_at
+            ->first();
+    }
+
+    /**
+     * Menghitung tanggal jatuh tempo dari pembayaran terakhir
+     */
     public function dueDate()
     {
-        if ($this->installation_date && $this->package) {
-            return Carbon::parse($this->installation_date)->addDays($this->package->duration);
+        $latestPayment = $this->latestPayment();
+
+        if ($latestPayment && $this->package) {
+            return Carbon::parse($latestPayment->payment_date)->addDays($this->package->duration);
         }
+
         return null;
     }
 
+    /**
+     * Menghitung sisa hari sebelum jatuh tempo
+     */
     public function daysLeft()
     {
         $dueDate = $this->dueDate();
         return $dueDate ? now()->diffInDays($dueDate, false) : null;
     }
 
+    /**
+     * Cek & update status pelanggan secara otomatis
+     */
     public function checkAndUpdateStatus()
     {
         if ($this->dueDate() && now()->gt($this->dueDate())) {
-            // Update status jika lewat jatuh tempo
             if ($this->status !== 'inactive') {
                 $this->update(['status' => 'inactive']);
             }
+        } else {
+            if ($this->status !== 'active') {
+                $this->update(['status' => 'active']);
+            }
         }
     }
-
-
 }
-
-
