@@ -38,14 +38,25 @@ class PaymentController extends Controller
         }
 
         // Cek jika sudah ada pembayaran yang aktif (belum jatuh tempo dan sukses)
-        $activePayment = $customer->payments()
-            ->where('status', 'success')
-            ->where('due_date', '>=', now())
-            ->first();
+        // $activePayment = $customer->payments()
+        //     ->where('status', 'success')
+        //     ->where('due_date', '>=', now())
+        //     ->first();
 
-        if ($activePayment) {
-            return redirect()->back()->with('info', 'Anda masih memiliki langganan aktif hingga ' . $activePayment->due_date->format('d M Y'));
-        }
+        // if ($activePayment) {
+        //     return redirect()->back()->with('info', 'Anda masih memiliki langganan aktif hingga ' . $activePayment->due_date->format('d M Y'));
+        // }
+
+// Cek pembayaran terakhir yang sukses
+$lastSuccessPayment = $customer->payments()
+    ->where('status', 'success')
+    ->latest('due_date')
+    ->first();
+
+// Jika belum jatuh tempo, tolak pembayaran
+if ($lastSuccessPayment && $lastSuccessPayment->due_date->isFuture()) {
+    return redirect()->back()->with('info', 'Anda hanya bisa membayar saat paket Anda sudah jatuh tempo pada ' . $lastSuccessPayment->due_date->format('d M Y'));
+}
 
         // Buat ID order unik
         $orderId = 'ORD-' . strtoupper(Str::random(6)) . '-' . time();

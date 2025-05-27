@@ -44,7 +44,6 @@ class AdminResource extends Resource
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->unique(Admin::class, 'email')
                     ->nullable(),
 
                 FileUpload::make('photo')

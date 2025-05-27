@@ -32,8 +32,8 @@ class CustomerPaymentButton extends Widget
         // Hitung hari yang tersisa
         $daysLeft = (int) $customer->daysLeft();
 
-        // Periksa apakah customer perlu membayar
-        $needsPayment = $daysLeft <= 7 || $customer->status === 'inactive';
+        $needsPayment = $customer->status === 'inactive';
+
 
         // Tampilkan tombol bayar jika perlu pembayaran dan tidak memiliki pembayaran aktif
         $showPayButton = $needsPayment && !$hasActivePayment;
@@ -45,6 +45,7 @@ class CustomerPaymentButton extends Widget
             'jatuhTempo' => $customer->dueDate()?->format('d M Y'),
         ];
     }
+
 
     public static function canView(): bool
     {

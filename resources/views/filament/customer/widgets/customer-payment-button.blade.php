@@ -14,8 +14,8 @@
                                     Langganan Anda akan berakhir dalam {{ $daysLeft }} hari
                                 @elseif($status === 'inactive')
                                     Langganan Anda telah berakhir
-                                @else
-                                    Langganan Anda telah berakhir
+                                @elseif($status === 'active' && $daysLeft <= 0)
+                                    Langganan Anda akan segera berakhir
                                 @endif
                             </h3>
                             <p class="text-sm text-warning-600 mt-1">
@@ -25,15 +25,15 @@
                                 @elseif($status === 'inactive')
                                     Layanan internet Anda telah dinonaktifkan. Silakan lakukan pembayaran untuk
                                     mengaktifkan kembali.
-                                @else
-                                    Silakan lakukan pembayaran untuk mengaktifkan kembali layanan Anda.
+                                @elseif($status === 'active' && $daysLeft <= 0)
+                                    Langganan Anda akan segera berakhir, segera lakukan pembayaran untuk menghindari pemutusan layanan.
                                 @endif
                             </p>
                         </div>
                     </div>
 
                     {{-- TOMBOL HANYA MUNCUL KALAU MEMANG PERLU --}}
-                    @if ($showPayButton)
+                    @if ($showPayButton || $status === 'active' && $daysLeft <= 7)
                         <div class="flex justify-end">
                             <a href="{{ url('/payment/create') }}"
                                 class="inline-flex items-center justify-center py-1 gap-1 font-medium rounded-lg border transition-colors focus:outline-none focus:ring-offset-2 focus:ring-2 focus:ring-inset filament-button h-9 px-4 text-sm text-white shadow focus:ring-white border-transparent bg-primary-600 hover:bg-primary-500 focus:bg-primary-700 focus:ring-offset-primary-700">

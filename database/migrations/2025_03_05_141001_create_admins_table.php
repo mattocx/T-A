@@ -9,9 +9,9 @@ return new class extends Migration {
     {
         Schema::create('admins', function (Blueprint $table) {
             $table->string('id')->primary();
-            
+
             $table->string('name');
-            $table->string('email')->unique()->nullable();
+            $table->string('email')->nullable();
             $table->string('password');
             $table->string('role')->default('admin'); // Menambahkan kolom role
             $table->string('phone')->nullable();

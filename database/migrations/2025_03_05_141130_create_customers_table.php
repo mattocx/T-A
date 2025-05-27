@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('username');
             $table->string('password');
             $table->string('role')->default('customer');
-            $table->string('nik')->unique();
+            $table->string('nik');
             $table->string('address');
             $table->string('phone');
             $table->string('photo')->nullable();

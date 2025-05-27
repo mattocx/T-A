@@ -85,8 +85,8 @@ class CustomerResource extends Resource
                 Select::make('network_type')
                     ->label('Jenis Jaringan')
                     ->options([
-                        'fiber' => 'Fiber Optic',
-                        'wireless' => 'Wireless',
+                        'Fiber' => 'Fiber Optic',
+                        'Wireless' => 'Wireless',
                     ])
                     ->required(),
                 Select::make('package_id')

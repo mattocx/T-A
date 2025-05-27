@@ -10,6 +10,7 @@ use App\Models\Payment;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Notifications\Notifiable;
 
 class Customer extends Authenticatable implements FilamentUser
@@ -81,7 +82,11 @@ class Customer extends Authenticatable implements FilamentUser
             return Carbon::parse($latestPayment->payment_date)->addDays($this->package->duration);
         }
 
-        return null;
+        if (empty($latestPayment)) {
+            return Carbon::parse($this->installation_date)->addDays($this->package->duration);
+        }
+
+        throw new Exception("Something wrong with due date calculation", 500);
     }
 
     /**

@@ -7,6 +7,13 @@
         </div>
     </div>
 
+
+    <div class="flex w-full flex-row">
+        <div class="mb-5 w-full">
+            @livewire(\App\Filament\Customer\Widgets\CustomerAlert::class)
+        </div>
+    </div>
+
     <div class="flex w-full flex-row">
         <div class="mb-5 w-full">
             @livewire(\App\Filament\Customer\Widgets\CustomerPaymentButton::class)
