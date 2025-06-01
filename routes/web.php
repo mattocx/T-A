@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
+ Route::get('/payment/create', [PaymentController::class, 'createPayment'])->name('payment.create');
 // Routes untuk pembayaran
 Route::middleware(['auth:customer'])->group(function () {
-    Route::get('/payment/create', [PaymentController::class, 'createPayment'])->name('payment.create');
+
     Route::get('/payment/status/{orderId}', [PaymentController::class, 'paymentStatus'])->name('payment.status');
 });
 

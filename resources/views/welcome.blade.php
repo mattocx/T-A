@@ -34,7 +34,7 @@
         </header>
 
         <main class="text-pink-900">
-            <section id="home" class="pt-20 md:pt-40">
+            <section id="home" class="scroll-mt-20 pt-20 md:pt-40">
                 <div class="container mx-auto px-8 lg:flex">
                     <div class="text-center lg:text-left lg:w-1/2">
                         <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold leading-none">
@@ -69,7 +69,7 @@
                 </div>
             </section>
 
-            <section id="about" class="py-20">
+            <section id="about" class="scroll-mt-20 py-20">
                 <div class="container mx-auto px-16 items-center flex flex-col lg:flex-row">
                     <div class="lg:w-1/2">
                         <div class="lg:pr-32 xl:pr-48">
@@ -116,7 +116,7 @@
                 </div>
             </section>
 
-            <section id="stats" class="py-20 lg:pt-32">
+            <section id="stats" class="scroll-mt-20 py-20 lg:pt-32">
                 <div class="container mx-auto text-center">
                     <p class="uppercase tracking-wider text-pink-600">📊 Data Pengguna Kami
 
@@ -144,7 +144,7 @@
                 </div>
             </section>
 
-            <section id="testimonials" class="py-20 lg:py-40">
+            <section id="testimonials" class="scroll-mt-20 py-20 lg:py-40">
                 <div class="container mx-auto">
                     <p class="uppercase tracking-wider mb-8 text-pink-600 text-center">Apa Kata Mereka yaa?
                     </p>
@@ -272,6 +272,18 @@
                     </div>
                 </div>
             </div>
+
+<div style="width: 100%; height: 500px;">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d126607.49753279098!2d110.5011773!3d-7.4115282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a713b5e003a63%3A0xd116145fbcb2c3ad!2sKANTOR%20PUSAT%20PT%20ISP%20CYB%20MEDIA%20%2F%20CYB%20DATACENTER%20KEMBANG!5e0!3m2!1sid!2sid!4v1748787368525!5m2!1sid!2sid"
+    width="100%"
+    height="100%"
+    style="border:0;"
+    allowfullscreen=""
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
 
             <!-- Copyright -->
             <div class="mt-12 border-t pt-6 text-center text-sm text-gray-500">

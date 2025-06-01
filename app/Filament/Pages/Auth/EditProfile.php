@@ -25,7 +25,6 @@ class EditProfile extends BaseEditProfile
                     ->maxLength(255),
 
                 $this->getNameFormComponent(),
-                $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
             ]);
