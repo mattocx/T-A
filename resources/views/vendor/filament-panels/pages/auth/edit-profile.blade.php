@@ -3,8 +3,8 @@
 >
     {{-- Tombol Back --}}
     <div class="mb-4">
-        <a
-            href="{{ route('filament.customer.pages.dashboard') }}"
+<a
+    href="{{ url()->previous() }}"
             class="inline-flex items-center px-4 py-2 bg-pink-600 text-gray-800 rounded hover:bg-gray-300 transition"
         >
             ← Kembali
