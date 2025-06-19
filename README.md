@@ -53,11 +53,23 @@ Website ini merupakan bagian dari Tugas Akhir saya dengan judul **"Merancang Web
 ## 🛠️ Cara Menjalankan Proyek
 
 ```bash
-git clone https://github.com/mattocx/WIFI.git
-cd nama-repo
+git clone https://github.com/mattocx/T-A.git
+cd T-A
 composer install
 cp .env.example .env
 php artisan key:generate
 # Konfigurasi database di file .env
 php artisan migrate
-php artisan serve
+```
+
+nah setelah itu gunakan tinker untuk data dummy admin agar bisa login
+1. jalankan tinker
+
+   1. php artisan tinker
+   2. \App\Models\Admin::create([
+    'name' => 'Elsa Admin',
+    'email' => 'elsa@example.com',
+    'password' => 'password123', // akan di-hashed otomatis karena pakai cast 'hashed'
+    'phone' => '08123456789',
+]);
+3. ketik exit kemudian enter untuk keluar dari tinker
