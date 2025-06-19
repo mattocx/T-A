@@ -24,6 +24,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CustomerImport;
+use App\Exports\CustomerExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+use App\Helpers\Fonnte;
+use Filament\Notifications\Notification;
 
 class CustomerResource extends Resource
 {
@@ -60,12 +65,9 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('id')
-                    ->label('Customer ID')
-                    ->disabled()
-                    ->dehydrated(),
+                TextInput::make('id')->label('Customer ID')->disabled()->dehydrated(),
                 TextInput::make('name')->label('Nama')->required()->maxLength(255),
-                TextInput::make('username')->label('username'),
+                TextInput::make('username')->label('Username'),
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
@@ -74,11 +76,7 @@ class CustomerResource extends Resource
                     ->afterStateHydrated(fn ($state, $set) => $set('password', ''))
                     ->maxLength(255),
                 TextInput::make('nik')->label('NIK')->required(),
-                FileUpload::make('photo')
-                    ->label('Foto')
-                    ->image()
-                    ->directory('customer-photos')
-                    ->nullable(),
+                FileUpload::make('photo')->label('Foto')->image()->directory('customer-photos')->nullable(),
                 TextInput::make('address')->label('Alamat')->required()->maxLength(500),
                 TextInput::make('phone')->label('Nomor HP')->required()->maxLength(15),
                 DatePicker::make('installation_date')->label('Tanggal Pemasangan')->required(),
@@ -124,6 +122,130 @@ class CustomerResource extends Resource
                     ])
                     ->formatStateUsing(fn ($state) => $state === 'active' ? 'Aktif' : 'Nonaktif'),
             ])
+            ->headerActions([
+                Action::make('import')
+                    ->label('Impor Customer')
+                    ->icon('heroicon-o-document-arrow-up')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Pilih File Excel')
+                            ->disk('public')
+                            ->directory('temp')
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $path = Storage::disk('public')->path($data['file']);
+                        Excel::import(new CustomerImport, $path);
+                    }),
+
+                Action::make('export')
+                    ->label('Ekspor Customer')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->form([
+                        Select::make('format')
+                            ->label('Pilih Format')
+                            ->options([
+                                'excel' => 'Excel (.xlsx)',
+                                'pdf' => 'PDF (.pdf)',
+                            ])
+                            ->required(),
+                        Select::make('status')
+                            ->label('Filter Status')
+                            ->options([
+                                'all' => 'Semua',
+                                'active' => 'Aktif',
+                                'inactive' => 'Nonaktif',
+                                'overdue' => 'Menunggak',
+                            ])
+                            ->default('all')
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $status = $data['status'];
+                        $format = $data['format'];
+
+                        $query = Customer::query();
+
+                        if ($status === 'active' || $status === 'inactive') {
+                            $query->where('status', $status);
+                        } elseif ($status === 'overdue') {
+                            $query->whereHas('payments', function ($q) {
+                                $q->where('status', '!=', 'success')
+                                  ->whereDate('due_date', '<', now());
+                            });
+                        }
+
+                        $customers = $query->get();
+
+                        if ($format === 'excel') {
+                            return Excel::download(new CustomerExport($customers), 'customers.xlsx');
+                        } else {
+                            $pdf = Pdf::loadView('exports.customers', [
+                                'customers' => $customers,
+                            ]);
+                            return response()->streamDownload(
+                                fn () => print($pdf->stream()),
+                                'customers.pdf'
+                            );
+                        }
+                    }),
+
+                // ✅ Broadcast WhatsApp di Header
+                Action::make('broadcast_whatsapp')
+                    ->label('Broadcast WhatsApp')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\Textarea::make('message')
+                            ->label('Isi Pesan')
+                            ->placeholder('Halo {{name}}, ini adalah pesan broadcast.')
+                            ->rows(4)
+                            ->required(),
+
+                        Select::make('status')
+                            ->label('Filter Status Pelanggan')
+                            ->options([
+                                'active' => 'Aktif',
+                                'inactive' => 'Nonaktif',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $messageTemplate = $data['message'];
+                        $status = $data['status'];
+
+                        $customers = Customer::where('status', $status)->get();
+
+                        $sukses = 0;
+                        $gagal = 0;
+                        $nomorGagal = [];
+
+                        foreach ($customers as $customer) {
+                            $message = str_replace('{{name}}', $customer->name, $messageTemplate);
+                            $response = Fonnte::send($customer->phone, $message);
+
+                            if (isset($response['status']) && $response['status'] === true) {
+                                $sukses++;
+                            } else {
+                                $gagal++;
+                                $nomorGagal[] = $customer->phone;
+                            }
+                        }
+
+                        Notification::make()
+                            ->title("Broadcast selesai: {$sukses} sukses, {$gagal} gagal")
+                            ->body($gagal > 0 ? 'Nomor gagal: ' . implode(', ', $nomorGagal) : 'Semua pesan terkirim.')
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading('Broadcast WhatsApp')
+                    ->modalDescription('Kirim pesan WhatsApp ke semua pelanggan berdasarkan status mereka.')
+                    ->requiresConfirmation(),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -135,27 +257,39 @@ class CustomerResource extends Resource
                     ->action(fn ($record) => $record->update([
                         'status' => $record->status === 'active' ? 'inactive' : 'active',
                     ])),
-                Action::make('import')
-                    ->label('Impor Customer')
-                    ->icon('heroicon-o-document-arrow-up')
+                Action::make('send_whatsapp')
+                    ->label('Kirim WhatsApp')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
                     ->form([
-                        FileUpload::make('file')
-                            ->label('Pilih File Excel')
-                            ->disk('public') // Gunakan disk 'public'
-                            ->directory('temp') // simpan di storage/app/public/temp
-                            ->acceptedFileTypes([
-                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                                'application/vnd.ms-excel',
-                            ])
+                        Forms\Components\Textarea::make('message')
+                            ->label('Pesan WhatsApp')
+                            ->default('Halo {{name}}, paket internet Anda sudah nonaktif. Segera lakukan pembayaran untuk paket {{package.name}} seharga Rp{{package.price}}. Terima kasih!')
                             ->required(),
                     ])
-                    ->action(function (array $data) {
-                        $path = Storage::disk('public')->path($data['file']);
-                        Excel::import(new CustomerImport, $path);
-                    })
-                    ->color('primary')
-                    ->modalHeading('Import Data Customer')
-                    ->modalDescription('Unggah file Excel berformat .xlsx untuk menambahkan data customer.'),
+                    ->action(function (array $data, $record) {
+                        $message = $data['message'];
+
+                        $message = str_replace('{{name}}', $record->name, $message);
+                        $message = str_replace('{{package.name}}', $record->package->name ?? '-', $message);
+                        $message = str_replace('{{package.price}}', number_format($record->package->price ?? 0, 0, ',', '.'), $message);
+
+
+                        $result = Fonnte::send($record->phone, $message);
+
+                        if (isset($result['status']) && $result['status'] == true) {
+                            Notification::make()
+                                ->title('Pesan berhasil dikirim ke ' . $record->phone)
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Gagal mengirim pesan')
+                                ->body($result['reason'] ?? 'Cek kembali token dan nomor tujuan.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -167,7 +301,6 @@ class CustomerResource extends Resource
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
-
         return $data;
     }
 
@@ -176,7 +309,6 @@ class CustomerResource extends Resource
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
-
         return $data;
     }
 

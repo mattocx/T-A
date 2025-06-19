@@ -14,6 +14,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 
 class AdminResource extends Resource
 {
@@ -60,11 +61,10 @@ class AdminResource extends Resource
                     ->afterStateHydrated(fn ($state, $set) => $set('password', ''))
                     ->maxLength(255),
 
-                    TextInput::make('role')
-    ->label('Role')
-    ->default('admin')
-    ->disabled(),
-
+                TextInput::make('role')
+                    ->label('Role')
+                    ->default('admin')
+                    ->disabled(),
             ]);
     }
 
@@ -74,17 +74,16 @@ class AdminResource extends Resource
             ->columns([
                 ImageColumn::make('photo')
                     ->label('Foto')
-                    ->circular() // Membuat foto berbentuk bulat
-                    ->square(), // Memastikan ukuran tetap persegi
+                    ->circular()
+                    ->square(),
                 TextColumn::make('id')->label('Admin ID')->sortable(),
                 TextColumn::make('name')->label('Nama Admin')->sortable()->searchable(),
                 TextColumn::make('phone')->label('Nomor Telepon')->sortable()->searchable(),
                 TextColumn::make('email')->label('Email')->sortable()->searchable(),
                 TextColumn::make('role')
-    ->label('Role')
-    ->formatStateUsing(fn () => 'Admin') // Menampilkan "Admin" secara default
-    ->sortable(),
-
+                    ->label('Role')
+                    ->formatStateUsing(fn () => 'Admin')
+                    ->sortable(),
                 TextColumn::make('created_at')->label('Dibuat Pada')->dateTime(),
             ])
             ->actions([
@@ -108,5 +107,10 @@ class AdminResource extends Resource
             'create' => Pages\CreateAdmin::route('/create'),
             'edit' => Pages\EditAdmin::route('/{record}/edit'),
         ];
+    }
+
+    public static function getTableContentFooter(): ?View
+    {
+        return view('filament.resources.admin.footer');
     }
 }
